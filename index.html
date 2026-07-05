@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pulse — Modern Music Player</title>
+  <meta name="description" content="Pulse is a modern, high-performance, glassmorphic web music player compatible with Navidrome and Subsonic music servers. Stream your personal library with fluid ambient graphics.">
+  <meta name="keywords" content="music player, navidrome, subsonic, audio player, self-hosted, web player, audio streaming">
+  
+  <!-- OpenGraph Metadata for sharing previews -->
+  <meta property="og:title" content="Pulse — Modern Music Player">
+  <meta property="og:description" content="Stream your personal audio collection in high fidelity with immersive ambient graphics and responsive desktop controls. Compatible with Navidrome and Subsonic.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Pulse Player">
+  
+  <!-- Favicon fallback -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='%237928ca'/></svg>">
+
+  <!-- Google Fonts for premium typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="/src/style.css">
+</head>
+<body>
+
+  <!-- Dynamic Ambient Background Glow -->
+  <div class="ambient-glow-container">
+    <canvas id="ambient-canvas"></canvas>
+    <div class="ambient-overlay"></div>
+  </div>
+
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand">
+          <div class="brand-logo"></div>
+          <span class="brand-name">Pulse</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section">
+          <span class="nav-section-title">Discover</span>
+          <a href="#" class="nav-item active" data-view="home">
+            <span class="nav-icon" data-icon="home"></span>
+            Home
+          </a>
+          <a href="#" class="nav-item" data-view="search">
+            <span class="nav-icon" data-icon="search"></span>
+            Search
+          </a>
+        </div>
+
+        <div class="nav-section">
+          <span class="nav-section-title">Library</span>
+          <a href="#" class="nav-item" data-view="albums">
+            <span class="nav-icon" data-icon="album"></span>
+            Albums
+          </a>
+          <a href="#" class="nav-item" data-view="artists">
+            <span class="nav-icon" data-icon="artist"></span>
+            Artists
+          </a>
+          <a href="#" class="nav-item" data-view="playlists">
+            <span class="nav-icon" data-icon="playlist"></span>
+            Playlists
+          </a>
+          <a href="#" class="nav-item" data-view="starred">
+            <span class="nav-icon" data-icon="heartOutline"></span>
+            Favorites
+          </a>
+        </div>
+      </nav>
+
+      <!-- Sidebar Now Playing Display -->
+      <div class="sidebar-now-playing" id="sidebar-now-playing">
+        <div class="sidebar-artwork-wrapper">
+          <img id="sidebar-art" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="Cover Art">
+          <button id="sidebar-fav-btn" class="fav-btn icon-button" title="Favorite">
+            <span class="nav-icon" data-icon="heartOutline"></span>
+          </button>
+        </div>
+        <div class="sidebar-track-meta">
+          <div class="sidebar-track-title" id="sidebar-title">Not Playing</div>
+          <div class="sidebar-track-artist" id="sidebar-artist">—</div>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <button class="settings-trigger-btn" id="settings-trigger">
+          <span class="nav-icon" data-icon="settings"></span>
+          Settings
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Window -->
+    <main class="main-window">
+      <header class="main-header">
+        <div class="header-left">
+          <button id="back-btn" class="icon-button back-btn hidden" title="Back">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+          </button>
+          <div class="view-title" id="view-title">Home</div>
+        </div>
+        <div class="header-right">
+          <!-- Connection Status Badge -->
+          <div class="status-badge" id="status-badge">
+            <span class="status-dot"></span>
+            <span class="status-text">Checking server...</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- Scrollable Content Frame -->
+      <div class="content-frame" id="content-frame">
+        <div id="content-area">
+          <!-- Dynamically injected views go here -->
+        </div>
+      </div>
+    </main>
+
+    <!-- Active Play Queue Panel (Drawer) -->
+    <div class="queue-panel" id="queue-panel">
+      <div class="queue-header">
+        <span class="queue-title">Play Queue</span>
+        <div class="queue-actions">
+          <button id="clear-queue-btn" class="icon-button danger" title="Clear Queue">
+            <span class="nav-icon" data-icon="trash"></span>
+          </button>
+          <button id="close-queue-btn" class="icon-button" title="Close Queue">
+            <span class="nav-icon" data-icon="close"></span>
+          </button>
+        </div>
+      </div>
+      <div class="queue-list" id="queue-list">
+        <!-- Queue items rendered dynamically -->
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Bottom Player Bar Controls -->
+  <footer class="player-bar">
+    
+    <!-- Progress Indicator (Span entire top of player bar) -->
+    <div class="player-progress-container">
+      <span class="time-display" id="time-current">0:00</span>
+      <div class="progress-bar-wrapper" id="progress-bar-wrapper">
+        <div class="progress-bar" id="progress-bar">
+          <div class="progress-handle"></div>
+        </div>
+      </div>
+      <span class="time-display" id="time-total">0:00</span>
+    </div>
+
+    <div class="player-bar-layout">
+      <!-- Mini track meta (for smaller screens/layout mirror) -->
+      <div class="player-mini-meta" id="player-mini-meta">
+        <img id="player-mini-art" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="">
+        <div class="mini-meta-text">
+          <div class="mini-title" id="player-mini-title">Not Playing</div>
+          <div class="mini-artist" id="player-mini-artist">—</div>
+        </div>
+      </div>
+
+      <!-- Playback Controls -->
+      <div class="player-controls">
+        <button id="shuffle-btn" class="player-btn icon-button secondary" title="Shuffle">
+          <span class="nav-icon" data-icon="shuffle"></span>
+        </button>
+        <button id="prev-btn" class="player-btn icon-button" title="Previous">
+          <span class="nav-icon" data-icon="skipBack"></span>
+        </button>
+        <button id="play-btn" class="player-btn play-pause-btn" title="Play">
+          <span class="nav-icon" data-icon="play"></span>
+        </button>
+        <button id="next-btn" class="player-btn icon-button" title="Next">
+          <span class="nav-icon" data-icon="skipForward"></span>
+        </button>
+        <button id="repeat-btn" class="player-btn icon-button secondary" title="Repeat">
+          <span class="nav-icon" data-icon="repeat"></span>
+        </button>
+      </div>
+
+      <!-- Utility Control (Queue Toggle & Volume) -->
+      <div class="player-utilities">
+        <button id="queue-toggle-btn" class="icon-button" title="Queue">
+          <span class="nav-icon" data-icon="queue"></span>
+        </button>
+        
+        <div class="volume-container">
+          <button id="volume-btn" class="icon-button" title="Mute">
+            <span class="nav-icon" data-icon="volume2"></span>
+          </button>
+          <div class="volume-slider-wrapper" id="volume-slider-wrapper">
+            <div class="volume-slider" id="volume-slider">
+              <div class="volume-handle"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Connection & Settings Overlay Modal -->
+  <div class="modal-overlay" id="settings-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Connect to Navidrome</h2>
+        <p>Enter your server credentials to stream your music library.</p>
+      </div>
+      <form id="settings-form">
+        <div class="form-group">
+          <label for="server-url">Server URL</label>
+          <input type="url" id="server-url" placeholder="https://navidrome.example.com" required autocomplete="url">
+          <small class="form-help">Must start with http:// or https://. <strong style="color: var(--accent-light);">Note:</strong> If this player is served over HTTPS, your server must also use HTTPS (Mixed Content policy).</small>
+        </div>
+        <div class="form-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" placeholder="music_lover" required autocomplete="username">
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
+        </div>
+        
+        <div class="modal-status" id="modal-status"></div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn secondary" id="settings-cancel-btn">Cancel</button>
+          <button type="submit" class="btn primary" id="settings-save-btn">Connect Server</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- App Main Entry Point -->
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
